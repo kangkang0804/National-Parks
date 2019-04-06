@@ -149,6 +149,22 @@ $('#natParks').on('click', (event) => {
     console.log(response);
     const results = response.data;
     console.log(results);
+
+    for (var i = 0; i < results.length; i++){
+        var state = results[i].states;
+        var parkName = results[i].fullName;
+        console.log(state);
+        console.log(parkName);
+        var fullLatLong = results[i].latLong;
+        var fullLatLongSplit = fullLatLong.split(",")
+        console.log(fullLatLongSplit);
+        var lat = fullLatLongSplit[0];
+        var lng = fullLatLongSplit[1];
+        console.log(lat);
+        console.log(lng);
+        var website = results[i].url;
+        console.log(website);
+    }
   });
 });
 /* eslint-enable */
