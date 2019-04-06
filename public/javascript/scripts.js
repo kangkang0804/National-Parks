@@ -1,26 +1,68 @@
 /* eslint-disable */
 console.warn('Project One JS Initialized');
 
+
+let marker;
+
 function initMap() {
   const map = new google.maps.Map(document.getElementById('map'), {
     mapTypeControl: false,
-    zoom: 3,
+    zoom: 12,
   });
-  const geocoder = new google.maps.Geocoder();
-  geocoder.geocode({ address: 'United States' }, (results, status) => {
-    if (status === 'OK') {
-      map.setCenter(results[0].geometry.location);
-      new google.maps.Marker({
+    // var geocoder = new google.maps.Geocoder;
+    // geocoder.geocode({ 'address': 'United States' }, function (results, status) {
+    //     console.log(results);
+    //     if (status === 'OK') {
+    //         map.setCenter(results[0].geometry.location);
+    //         new google.maps.Marker({
+    //             map: map,
+    //             position: results[0].geometry.location
+    //         });
+    //     } else {
+    //         window.alert('Geocode was not successful for the following reason: ' +
+    //             status);
+    //     }
+    // });
+
+  infoWindow = new google.maps.InfoWindow();
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((position) => {
+      const pos = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      };
+      console.log(pos);
+      console.log(position);
+      infoWindow.setPosition(pos);
+      infoWindow.setContent('Location found.');
+      infoWindow.open(map);
+      map.setCenter(pos);
+
+      const marker = new google.maps.Marker({
+        position: pos,
         map,
-        position: results[0].geometry.location,
+        title: 'Current location',
       });
-    } else {
-      window.alert(`Geocode was not successful for the following reason: ${
-        status}`);
-    }
-  });
+
+      marker.setMap(map);
+    }, () => {
+      handleLocationError(true, infoWindow, map.getCenter());
+    });
+  } else {
+    // Browser doesn't support Geolocation
+    handleLocationError(false, infoWindow, map.getCenter());
+  }
 
   new AutocompleteDirectionsHandler(map);
+}
+
+function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+  infoWindow.setPosition(pos);
+  infoWindow.setContent(browserHasGeolocation
+    ? 'Error: The Geolocation service failed.'
+    : 'Error: Your browser doesn\'t support geolocation.');
+  infoWindow.open(map);
 }
 
 function AutocompleteDirectionsHandler(map) {
