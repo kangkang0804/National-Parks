@@ -176,4 +176,37 @@ AutocompleteDirectionsHandler.prototype.route = function () {
     },
   );
 };
+
+$('#natParks').on('click', (event) => {
+  event.preventDefault();
+
+  // var parks = $("#").val()
+
+  const queryURL = 'https://developer.nps.gov/api/v1/parks?api_key=PBHgGRuXeBVDJGsKN4OQQmsJPetNnYW3uwKNNRD8';
+
+  $.ajax({
+    url: queryURL,
+    method: 'GET',
+  }).then((response) => {
+    console.log(response);
+    const results = response.data;
+    console.log(results);
+
+    for (var i = 0; i < results.length; i++){
+        var state = results[i].states;
+        var parkName = results[i].fullName;
+        console.log(state);
+        console.log(parkName);
+        var fullLatLong = results[i].latLong;
+        var fullLatLongSplit = fullLatLong.split(",")
+        console.log(fullLatLongSplit);
+        var lat = fullLatLongSplit[0];
+        var lng = fullLatLongSplit[1];
+        console.log(lat);
+        console.log(lng);
+        var website = results[i].url;
+        console.log(website);
+    }
+  });
+});
 /* eslint-enable */
