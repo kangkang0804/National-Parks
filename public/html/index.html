@@ -6,13 +6,25 @@
   <title>Project One</title>
   <meta name="description" content="Project 1">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Noticia+Text" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Ruge+Boogie" rel="stylesheet">
   <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="./static/css/style.css">
 </head>
 
 <body>
-  <div class="container-fluid">
+
+  <div class="jumbotron jumbotron-fluid">
+    <div class="container">
+      <h1 class="display-4">Parks <n>N </n>Stops</h1>
+      <p class="lead">Going somewhere? We have the parks and stops for you!</p>
+    </div>
+  </div>
+
+  <div class="bg"></div>
+
+  <div class="container">
     <div class="row">
       <div class="col-12 col-md-12 col-lg-12">
         <div id="floating-panel">
@@ -34,9 +46,9 @@
   </div>
 
   <div id="map"></div>
-  <div id="right-panel">
+  <div class="col-lg-4 col-md-6 col-sm-12" id="right-panel"></div>
+  <div class="col-lg-8 col-md-6 col-sm-12" id="parks-panel"></div>
 
-  </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
