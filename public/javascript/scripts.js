@@ -3,36 +3,25 @@ console.warn('Project One JS Initialized');
 
 
 let marker;
+var pos = {};
 
 function initMap() {
   const map = new google.maps.Map(document.getElementById('map'), {
     mapTypeControl: false,
     zoom: 12,
   });
-    // var geocoder = new google.maps.Geocoder;
-    // geocoder.geocode({ 'address': 'United States' }, function (results, status) {
-    //     console.log(results);
-    //     if (status === 'OK') {
-    //         map.setCenter(results[0].geometry.location);
-    //         new google.maps.Marker({
-    //             map: map,
-    //             position: results[0].geometry.location
-    //         });
-    //     } else {
-    //         window.alert('Geocode was not successful for the following reason: ' +
-    //             status);
-    //     }
-    // });
-
+  
   infoWindow = new google.maps.InfoWindow();
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition((position) => {
-      const pos = {
+      var pos = {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
       };
       console.log(pos);
+      console.log(pos.lat);
+      console.log(pos.lng)
       console.log(position);
       infoWindow.setPosition(pos);
       infoWindow.setContent('Location found.');
