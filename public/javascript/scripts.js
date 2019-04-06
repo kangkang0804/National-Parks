@@ -135,3 +135,19 @@ AutocompleteDirectionsHandler.prototype.route = function () {
         });
 };
 
+$("#natParks").on("click", function(event){
+    event.preventDefault();
+
+    // var parks = $("#").val()
+
+    var queryURL = "https://developer.nps.gov/api/v1/parks?api_key=PBHgGRuXeBVDJGsKN4OQQmsJPetNnYW3uwKNNRD8"
+
+    $.ajax({
+        url: queryURL,
+        method: "GET"
+    }).then(function(response){
+        console.log(response);
+        var results = response.data;
+        console.log(results);
+    })
+});
