@@ -3,12 +3,231 @@ console.warn('Project One JS Initialized');
 
 
 let marker;
+var initialLocationLat = 0
+var initialLocationLon = 0
+var localWeather = []
 
 function initMap() {
   const map = new google.maps.Map(document.getElementById('map'), {
     mapTypeControl: false,
     zoom: 12,
+    styles: [
+      {
+        "elementType": "geometry",
+        "stylers": [
+          {
+            "color": "#ebe3cd"
+          }
+        ]
+      },
+      {
+        "elementType": "labels.text.fill",
+        "stylers": [
+          {
+            "color": "#523735"
+          }
+        ]
+      },
+      {
+        "elementType": "labels.text.stroke",
+        "stylers": [
+          {
+            "color": "#f5f1e6"
+          }
+        ]
+      },
+      {
+        "featureType": "administrative",
+        "elementType": "geometry.stroke",
+        "stylers": [
+          {
+            "color": "#c9b2a6"
+          }
+        ]
+      },
+      {
+        "featureType": "administrative.land_parcel",
+        "elementType": "geometry.stroke",
+        "stylers": [
+          {
+            "color": "#dcd2be"
+          }
+        ]
+      },
+      {
+        "featureType": "administrative.land_parcel",
+        "elementType": "labels.text.fill",
+        "stylers": [
+          {
+            "color": "#ae9e90"
+          }
+        ]
+      },
+      {
+        "featureType": "landscape.natural",
+        "elementType": "geometry",
+        "stylers": [
+          {
+            "color": "#dfd2ae"
+          }
+        ]
+      },
+      {
+        "featureType": "poi",
+        "elementType": "geometry",
+        "stylers": [
+          {
+            "color": "#dfd2ae"
+          }
+        ]
+      },
+      {
+        "featureType": "poi",
+        "elementType": "labels.text.fill",
+        "stylers": [
+          {
+            "color": "#93817c"
+          }
+        ]
+      },
+      {
+        "featureType": "poi.park",
+        "elementType": "geometry.fill",
+        "stylers": [
+          {
+            "color": "#a5b076"
+          }
+        ]
+      },
+      {
+        "featureType": "poi.park",
+        "elementType": "labels.text.fill",
+        "stylers": [
+          {
+            "color": "#447530"
+          }
+        ]
+      },
+      {
+        "featureType": "road",
+        "elementType": "geometry",
+        "stylers": [
+          {
+            "color": "#f5f1e6"
+          }
+        ]
+      },
+      {
+        "featureType": "road.arterial",
+        "elementType": "geometry",
+        "stylers": [
+          {
+            "color": "#fdfcf8"
+          }
+        ]
+      },
+      {
+        "featureType": "road.highway",
+        "elementType": "geometry",
+        "stylers": [
+          {
+            "color": "#f8c967"
+          }
+        ]
+      },
+      {
+        "featureType": "road.highway",
+        "elementType": "geometry.stroke",
+        "stylers": [
+          {
+            "color": "#e9bc62"
+          }
+        ]
+      },
+      {
+        "featureType": "road.highway.controlled_access",
+        "elementType": "geometry",
+        "stylers": [
+          {
+            "color": "#e98d58"
+          }
+        ]
+      },
+      {
+        "featureType": "road.highway.controlled_access",
+        "elementType": "geometry.stroke",
+        "stylers": [
+          {
+            "color": "#db8555"
+          }
+        ]
+      },
+      {
+        "featureType": "road.local",
+        "elementType": "labels.text.fill",
+        "stylers": [
+          {
+            "color": "#806b63"
+          }
+        ]
+      },
+      {
+        "featureType": "transit.line",
+        "elementType": "geometry",
+        "stylers": [
+          {
+            "color": "#dfd2ae"
+          }
+        ]
+      },
+      {
+        "featureType": "transit.line",
+        "elementType": "labels.text.fill",
+        "stylers": [
+          {
+            "color": "#8f7d77"
+          }
+        ]
+      },
+      {
+        "featureType": "transit.line",
+        "elementType": "labels.text.stroke",
+        "stylers": [
+          {
+            "color": "#ebe3cd"
+          }
+        ]
+      },
+      {
+        "featureType": "transit.station",
+        "elementType": "geometry",
+        "stylers": [
+          {
+            "color": "#dfd2ae"
+          }
+        ]
+      },
+      {
+        "featureType": "water",
+        "elementType": "geometry.fill",
+        "stylers": [
+          {
+            "color": "#b9d3c2"
+          }
+        ]
+      },
+      {
+        "featureType": "water",
+        "elementType": "labels.text.fill",
+        "stylers": [
+          {
+            "color": "#92998d"
+          }
+        ]
+      }
+    ]
   });
+
     // var geocoder = new google.maps.Geocoder;
     // geocoder.geocode({ 'address': 'United States' }, function (results, status) {
     //     console.log(results);
@@ -32,10 +251,13 @@ function initMap() {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
       };
-      console.log(pos);
-      console.log(position);
-      infoWindow.setPosition(pos);
-      infoWindow.setContent('Location found.');
+      initialLocationLat = pos.lat
+      initialLocationLon = pos.lng
+      getWeather()
+      // console.log(pos);
+      // console.log(position);
+      // infoWindow.setPosition(pos);
+      // infoWindow.setContent('You Here');
       infoWindow.open(map);
       map.setCenter(pos);
 
@@ -43,6 +265,8 @@ function initMap() {
         position: pos,
         map,
         title: 'Current location',
+        animation: google.maps.Animation.DROP,
+        icon: 'http://icons.iconarchive.com/icons/icons-land/vista-map-markers/48/Map-Marker-Push-Pin-1-Pink-icon.png'
       });
 
       marker.setMap(map);
@@ -209,4 +433,35 @@ $('#natParks').on('click', (event) => {
     }
   });
 });
+
+function getWeather() {
+  console.log(initialLocationLat)
+  console.log(initialLocationLon)
+  var queryURL = 'http://api.openweathermap.org/data/2.5/weather?lat=' + initialLocationLat + '&lon=' + initialLocationLon + '&APPID=7a6b3354e50774f952a848fe125c2899'
+
+  $.ajax({
+    url: queryURL,
+    method: 'GET',
+  }).then(function(response) {
+    console.log(response)
+      var location = response.name
+      // var conditions = response.weather[0].main
+      var clarity = response.weather[0].description
+      var temp = parseFloat(response.main.temp)
+      var actualTemp = (temp - 273.5) * 9/5 +32
+      var weatherIcon = response.weather[0].icon + ".png"
+
+    var line1 = "<p>Currently in " + location
+    var bckGround = 'http://openweathermap.org/img/w/' + weatherIcon
+    // var line2 = "<p>" + conditions
+    var line3 = "<p>Skies: " + clarity
+    var line4 = "<p>Temperature: " + Math.round(actualTemp)
+    $("#weather-box").append(line1)
+    // $("#weather-box").append(line2)
+    $("#weather-box").append(line3)
+    $("#weather-box").append(line4)
+    $("#weather-box").css({'background-image': 'url(' + bckGround + ')', 'background-repeat': 'no-repeat', 'background-position' : 'right', 'height' : '50%'})
+    $("#input-box").append('<div class="row"><div class="col-12 input-box"><div><input id="destination-input" class="controls" type="text" placeholder="Enter a destination location"></div></div>')
+  })
+}
 /* eslint-enable */

@@ -2,8 +2,11 @@
        * element that contains the map. */
        #map {
         height: 600px;
-        width: 70%;
+        /* width: 70%; */
         align: center;
+        border-radius: 10px;
+        margin-left: 25px;
+        border: 4px solid #918151;
       }
       /* Optional: Makes the sample page fill the window. */
       html, body {
@@ -125,4 +128,20 @@ body {
 .adp {
   background-color: white;
 }
-
+#weather-box {
+  border: 4px solid #918151;
+  border-radius: 10px;
+  margin-left: 25px;
+  background: lightblue;
+  color: white;
+  height: fit-content;
+  padding-top: 4px;
+}
+.input-box {
+  background: none;
+  border: 1px solid;
+}
+p {
+  font-size: 20px;
+  line-height: 20px;
+}
