@@ -1,7 +1,9 @@
      /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
        #map {
-        height: 500px;
+        height: 600px;
+        width: 100%;
+        align: center;
       }
       /* Optional: Makes the sample page fill the window. */
       html, body {
@@ -82,4 +84,55 @@
   font-family: Roboto;
   font-size: 13px;
   font-weight: 300;
+
 }
+
+body {
+  background-image: url("https://d2v9y0dukr6mq2.cloudfront.net/video/thumbnail/aNKqAFb/green-grass-under-rays-of-sun-closeup-shallow-dof-raw-video-record_spgnoeh2x__F0000.png");
+  /* Full height */
+  width: 100%;
+
+  /* Center and scale the image nicely */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.jumbotron {
+  background: url("http://www.blueskyamusements.com/images/site/template/bkg-sky.jpg");
+    /* Full height */
+    width: 100%;
+
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.display-4 {
+  font-family: 'Noticia Text', serif;
+  color: white;
+}
+
+.display-4 n{
+  font-family: 'Ruge Boogie', cursive;
+}
+
+.lead {
+  color: white;
+}
+
+.adp {
+  background-color: white;
+}
+/* 
+@media (min-width: 992px){
+.col-lg-4 {
+    max-width: 100%;
+} }
+
+@media (min-width: 768px){
+.col-md-6 {
+    -ms-flex: 0 0 50%;
+    flex: 0 0 50%;
+    max-width: 100%;}} */

@@ -1,40 +1,65 @@
 /* eslint-disable */
 console.warn('Project One JS Initialized');
-
-
-let marker;
-var pos = {};
-
 function initMap() {
   const map = new google.maps.Map(document.getElementById('map'), {
     mapTypeControl: false,
     zoom: 12,
   });
-  
   infoWindow = new google.maps.InfoWindow();
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition((position) => {
-      var pos = {
+      const pos = {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
       };
-      console.log(pos);
-      console.log(pos.lat);
-      console.log(pos.lng)
-      console.log(position);
       infoWindow.setPosition(pos);
       infoWindow.setContent('Location found.');
       infoWindow.open(map);
       map.setCenter(pos);
+      $("#near-me").on("click", function () {
+        var parkState, parkName, geoFullState, geoShortState;
+        let geoURL = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=' + pos.lat + ',' + pos.lng + '&key=AIzaSyC-SbdXGcSyHpgMpMQZGNp71Z_IrHxfCOI'
+        $.ajax({
+          url: geoURL,
+          method: 'GET',
+        }).then((geoResults) => {
+          geoFullState = geoResults.results[0].address_components[4].long_name;
+          geoShortState = geoResults.results[0].address_components[4].short_name;
+          console.log(geoFullState);
+          console.log(geoShortState);
+        });
 
-      const marker = new google.maps.Marker({
+        const parksURL = 'https://developer.nps.gov/api/v1/parks?api_key=PBHgGRuXeBVDJGsKN4OQQmsJPetNnYW3uwKNNRD8';
+        $.ajax({
+          url: parksURL,
+          method: 'GET',
+        }).then((parkResults) => {
+          var results = parkResults.data;
+          for (i = 0; i < results.length; i++) {
+            parkState = results[i].states;
+            parkName = results[i].fullName;
+            console.log(parkState);
+            console.log(parkName);
+          }
+          if (parkState === geoShortState) {
+            console.log(parkName);
+          } else {
+            var parksDisplayDiv = $("<p>");
+            parksDisplayDiv.text("There are no National Parks in " + geoFullState);
+            $("#parks-view").append(parksDisplayDiv);
+          }
+        })
+      })
+
+      const geoMarker = new google.maps.Marker({
         position: pos,
-        map,
+        map: map,
+        animation: google.maps.Animation.DROP,
         title: 'Current location',
       });
 
-      marker.setMap(map);
+      geoMarker.setMap(map);
     }, () => {
       handleLocationError(true, infoWindow, map.getCenter());
     });
@@ -165,4 +190,43 @@ AutocompleteDirectionsHandler.prototype.route = function () {
     },
   );
 };
+
+
+$('#natParks').on('click', (event) => {
+  event.preventDefault();
+  var state, parkName, fullLatLong, fullLatLongSplit, lat, lng, website;
+  // var parks = $("#").val()
+
+  const queryURL = 'https://developer.nps.gov/api/v1/parks?api_key=PBHgGRuXeBVDJGsKN4OQQmsJPetNnYW3uwKNNRD8';
+
+  $.ajax({
+    url: queryURL,
+    method: 'GET',
+  }).then((response) => {
+    console.log(response);
+    const results = response.data;
+    console.log(results);
+
+    for (var i = 0; i < results.length; i++) {
+      var statesArray = [];
+      state = results[i].states;
+      statesArray.push(state);
+      console.log(statesArray);
+      parkName = results[i].fullName;
+      console.log(state);
+      console.log(parkName);
+      fullLatLong = results[i].latLong;
+      fullLatLongSplit = fullLatLong.split(",")
+      console.log(fullLatLongSplit);
+      lat = fullLatLongSplit[0];
+      lng = fullLatLongSplit[1];
+      console.log(lat);
+      console.log(lng);
+      website = results[i].url;
+      console.log(website);
+
+    }
+
+  });
+});
 /* eslint-enable */
