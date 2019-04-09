@@ -3,9 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Project One</title>
+  <title>Parks-N-Stops</title>
   <meta name="description" content="Project 1">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase.js"></script>
+ <!-- Add Google Material Design CDN -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.blue-indigo.min.css">
+  <script defer src="https://code.getmdl.io/1.1.3/material.min.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Noticia+Text" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Ruge+Boogie" rel="stylesheet">
   <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -16,14 +21,31 @@
 <body>
 
   <div class="jumbotron jumbotron-fluid">
-    <div class="container">
-      <h1 class="display-4">Parks <n>N </n>Stops</h1>
-      <p class="lead">Going somewhere? We have the parks and stops for you!</p>
+    <div class="container mdl-color-text--white">
+      <div id="user-area" class="row">
+        <div hidden id="user-pic"></div>
+        <div hidden id="user-name"></div>
+        <button hidden id="sign-in" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+            <i class="material-icons">account_circle</i>Sign-in with Google
+        </button>
+        <button hidden class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" id="sign-in-btn-anon">Continue as Guest</button>
+        <button hidden class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" id="sign-out-btn">Sign Out</button>
+
+
+      </div>
+        <h1 class="display-4">Parks <n>N </n>Stops</h1>
+        <p class="lead">Going somewhere? We have the parks and stops for you!</p>
+
     </div>
   </div>
 
   <div class="bg"></div>
 
+  <!-- <button id="sign-in-btn" class="btn">sign in</button> -->
+  <div class="row">
+    <div id="map" class="col-8 map-box"></div>
+    <div id="weather-box" class="col-3"></div>
+  </div>
   <div class="container">
     <div class="row">
       <div class="col-12 col-md-12 col-lg-12">
@@ -40,17 +62,90 @@
             <input type="radio" name="type" id="changemode-driving">
             <label for="changemode-driving">Driving</label>
 
-            <button type="button" class="btn btn-primary" id="natParks">National Parks</button>
-            
+            <button type="button" class="btn btn-primary" id="sign-in-btn">sign in</button>
+
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="map"></div>
+  <!-- <div id="map"></div>
   <div class="col-lg-4 col-md-6 col-sm-12" id="right-panel"></div>
-  <div class="col-lg-8 col-md-6 col-sm-12" id="parks-panel"></div>
+  <div class="col-lg-8 col-md-6 col-sm-12" id="parks-panel"></div> -->
+
+  <div class="container">
+    <div class="row">
+      <div class="col-4 col-md-4 col-lg-4">
+        <button type="button" class="btn btn-primary" id="natParks">National Parks</button>
+      </div>
+      <div class="col-4 col-md-4 col-lg-4">
+        <button type="button" class="btn btn-primary" id="near-me">Near Me</button>
+      </div>
+      <div class="col-4 col-md-4 col-lg-4">
+        <div class="form-group">
+          <label for="exampleFormControlSelect2">States: </label>
+          <select multiple class="form-control" id="stateSelect">
+            <option class="state" id="AL">Alabama</option>
+            <option class="state" id="AK">Alaska</option>
+            <option class="state" id="AZ">Arizona</option>
+            <option class="state" id="AR">Arkansas</option>
+            <option class="state" id="CA">California</option>
+            <option class="state" id="CO">Colorado</option>
+            <option class="state" id="CT">Connecticut</option>
+            <option class="state" id="DE">Delaware</option>
+            <option class="state" id="FL">Florida</option>
+            <option class="state" id="GA">Georgia</option>
+            <option class="state" id="HI">Hawaii</option>
+            <option class="state" id="ID">Idaho</option>
+            <option class="state" id="IL">Illinois</option>
+            <option class="state" id="IN">Indiana</option>
+            <option class="state" id="IA">Iowa</option>
+            <option class="state" id="KS">Kansas</option>
+            <option class="state" id="KY">Kentucky</option>
+            <option class="state" id="LA">Louisiana</option>
+            <option class="state" id="ME">Maine</option>
+            <option class="state" id="MD">Maryland</option>
+            <option class="state" id="MA">Massachusetts</option>
+            <option class="state" id="MI">Michigan</option>
+            <option class="state" id="MN">Minnesota</option>
+            <option class="state" id="MS">Mississippi</option>
+            <option class="state" id="MO">Missouri</option>
+            <option class="state" id="MT">Montana</option>
+            <option class="state" id="NE">Nebraska</option>
+            <option class="state" id="NV">Nevada</option>
+            <option class="state" id="NH">New Hampshire</option>
+            <option class="state" id="NJ">New Jersey</option>
+            <option class="state" id="NM">New Mexico</option>
+            <option class="state" id="NY">New York</option>
+            <option class="state" id="NC">North Carolina</option>
+            <option class="state" id="ND">North Dakota</option>
+            <option class="state" id="OH">Ohio</option>
+            <option class="state" id="OK">Oklahoma</option>
+            <option class="state" id="OR">Oregon</option>
+            <option class="state" id="PA">Pennsylvania</option>
+            <option class="state" id="RI">Rhode Island</option>
+            <option class="state" id="SC">South Carolina</option>
+            <option class="state" id="SD">South Dakota</option>
+            <option class="state" id="TN">Tennessee</option>
+            <option class="state" id="TX">Texas</option>
+            <option class="state" id="UT">Utah</option>
+            <option class="state" id="VT">Vermont</option>
+            <option class="state" id="VA">Virginia</option>
+            <option class="state" id="WA">Washington</option>
+            <option class="state" id="WV">West Virginia</option>
+            <option class="state" id="WI">Wisconsin</option>
+            <option class="state" id="WY">Wyoming</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-4 col-md-4 col-lg-4" id="parks-view">
+      </div>
+    </div>
+  </div>
+
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
