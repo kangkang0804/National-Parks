@@ -4,7 +4,7 @@ const config = {
   databaseURL: 'https://parks-n-stops.firebaseio.com',
   projectId: 'parks-n-stops',
   storageBucket: 'parks-n-stops.appspot.com',
-  messagingSenderId: '929275240522'
+  messagingSenderId: '929275240522',
 };
 
 /* eslint-disable */
