@@ -8,8 +8,8 @@ const config = {
 };
 
 /* eslint-disable */
-var initialLocationLat = 0
-var initialLocationLon = 0
+var locationLat = 0
+var locationLng = 0
 
 firebase.initializeApp(config);
 
@@ -40,7 +40,7 @@ $("#sign-out-btn").on('click', event => {
 
 firebase.auth().onAuthStateChanged(firebaseUser => {
   console.log(firebaseUser)
-  if(firebaseUser) {
+  if (firebaseUser) {
     var userName = getUserName()
     var picUrl = getProfilePicUrl()
     if (userName === null) {
@@ -48,7 +48,7 @@ firebase.auth().onAuthStateChanged(firebaseUser => {
       $("#user-pic").html('<i class="material-icons">account_circle</i>')
     }
     else if (userName != null) {
-    $("#user-pic").html('<img src=' + addSizeToGoogleProfilePic(picUrl) + '>')
+      $("#user-pic").html('<img src=' + addSizeToGoogleProfilePic(picUrl) + '>')
     }
     $("#user-name").text(userName)
     $("#sign-in").attr("hidden", "true")
@@ -76,7 +76,7 @@ function initMap() {
     mapTypeControl: false,
     zoom: 12,
 
-styles: [
+    styles: [
       {
         "elementType": "geometry",
         "stylers": [
@@ -292,22 +292,9 @@ styles: [
       }
     ]
   });
-    // var geocoder = new google.maps.Geocoder;
-    // geocoder.geocode({ 'address': 'United States' }, function (results, status) {
-    //     console.log(results);
-    //     if (status === 'OK') {
-    //         map.setCenter(results[0].geometry.location);
-    //         new google.maps.Marker({
-    //             map: map,
-    //             position: results[0].geometry.location
-    //         });
-    //     } else {
-    //         window.alert('Geocode was not successful for the following reason: ' +
-    //             status);
-    //     }
-    // });
+  infoWindow = new google.maps.InfoWindow({
 
-  infoWindow = new google.maps.InfoWindow();
+  });
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition((position) => {
@@ -315,8 +302,8 @@ styles: [
         lat: position.coords.latitude,
         lng: position.coords.longitude,
       };
-      initialLocationLat = pos.lat
-      initialLocationLon = pos.lng
+      locationLat = pos.lat
+      locationLng = pos.lng
       getWeather()
       console.log(pos);
       console.log(position);
@@ -360,43 +347,79 @@ styles: [
       })
       // end function to find parks inside current state
       $(".state").on("click", function () {
+        var parkLocated = false;
         var stateSelected;
         stateSelected = $(this).attr("id");
         console.log(stateSelected);
-        map.setCenter();
+        // locationLat = 
+        // locationLng = 
+        // getWeather()
+        var stateURL = "https://maps.googleapis.com/maps/api/geocode/json?address=" + stateSelected + "&key=AIzaSyC-SbdXGcSyHpgMpMQZGNp71Z_IrHxfCOI";
+        $.ajax({
+          url: stateURL,
+          method: 'GET',
+        }).then((response) => {
+          console.log(response.results[0].geometry.location)
+          map.setCenter(response.results[0].geometry.location);
+          map.setZoom(6);
+        });
         const parksURL = 'https://developer.nps.gov/api/v1/parks?api_key=PBHgGRuXeBVDJGsKN4OQQmsJPetNnYW3uwKNNRD8';
         $.ajax({
           url: parksURL,
           method: 'GET',
         }).then((parkResults) => {
+          var parkLocated = false;
           var results = parkResults.data;
           for (i = 0; i < results.length; i++) {
-            parkState = results[i].states;
-            parkName = results[i].fullName;
-            website = results[i].url;
-            fullLatLong = results[i].latLong;
-            fullLatLongSplit = fullLatLong.split(",")
+            var parkLocated = false;
+            var existingPark = null;
+            var parkState = results[i].states;
+            var parkName = results[i].fullName;
+            var website = results[i].url;
+            var fullLatLong = results[i].latLong;
+            if (fullLatLong === "") { continue; }
+            var fullLatLongSplit = fullLatLong.split(",")
+            var lat = fullLatLongSplit[0];
+            var lng = fullLatLongSplit[1];
+            var latSplit = lat.split(":");
+            var lngSplit = lng.split(":");
+            var latLiteral = latSplit[1];
+            var lngLiteral = lngSplit[1];
+            var latLiteralInt = parseFloat(latLiteral);
+            var lngLiteralInt = parseFloat(lngLiteral);
+
             if (stateSelected === parkState) {
+              parkLocated = true;
               var parkNameDiv = $("<p>");
               parkNameDiv.text(parkName);
+              parkNameDiv.attr("class", "park-located")
               var parkUrlDiv = $("<a>").text(website);
               parkUrlDiv.attr("href", website)
               $("#parks-view").append(parkNameDiv, parkUrlDiv);
-              var fullLatLong = results[i].latLong;
-              var fullLatLongSplit = fullLatLong.split(",")
-              console.log(fullLatLongSplit);
-              var lat = fullLatLongSplit[0];
-              var lng = fullLatLongSplit[1];
-              console.log(lat);
-              console.log(lng);
-
-            } else {
-              console.log('no parks in the selected state');
+              existingPark = {
+                lat: latLiteralInt,
+                lng: lngLiteralInt,
+              }
+              console.log(existingPark);
             }
+            const parkMarker = new google.maps.Marker({
+              position: existingPark,
+              map: map,
+              animation: google.maps.Animation.DROP,
+            })
+            parkMarker.setMap(map);
+
           }
+          if (!parkLocated) {
+            var noParkDiv = $("<p>");
+            noParkDiv.text("No parks were located");
+            noParkDiv.attr("id", "none-found");
+            $("#parks-view").append(noParkDiv);
+            console.log("no parks")
+          }
+
         })
       })
-
 
       const marker = new google.maps.Marker({
         position: pos,
@@ -556,20 +579,20 @@ $('#natParks').on('click', (event) => {
     const results = response.data;
     console.log(results);
 
-    for (var i = 0; i < results.length; i++){
-        var state = results[i].states;
-        var parkName = results[i].fullName;
-        console.log(state);
-        console.log(parkName);
-        var fullLatLong = results[i].latLong;
-        var fullLatLongSplit = fullLatLong.split(",")
-        console.log(fullLatLongSplit);
-        var lat = fullLatLongSplit[0];
-        var lng = fullLatLongSplit[1];
-        console.log(lat);
-        console.log(lng);
-        var website = results[i].url;
-        console.log(website);
+    for (var i = 0; i < results.length; i++) {
+      var state = results[i].states;
+      var parkName = results[i].fullName;
+      console.log(state);
+      console.log(parkName);
+      var fullLatLong = results[i].latLong;
+      var fullLatLongSplit = fullLatLong.split(",")
+      console.log(fullLatLongSplit);
+      var lat = fullLatLongSplit[0];
+      var lng = fullLatLongSplit[1];
+      console.log(lat);
+      console.log(lng);
+      var website = results[i].url;
+      console.log(website);
     }
   });
 });
@@ -589,21 +612,21 @@ $('#natParks').on('click', (event) => {
 // }
 
 function getWeather() {
-  console.log(initialLocationLat)
-  console.log(initialLocationLon)
-  var queryURL = 'http://api.openweathermap.org/data/2.5/weather?lat=' + initialLocationLat + '&lon=' + initialLocationLon + '&APPID=7a6b3354e50774f952a848fe125c2899'
+  console.log(locationLat)
+  console.log(locationLng)
+  var queryURL = 'http://api.openweathermap.org/data/2.5/weather?lat=' + locationLat + '&lon=' + locationLng + '&APPID=7a6b3354e50774f952a848fe125c2899'
 
   $.ajax({
     url: queryURL,
     method: 'GET',
-  }).then(function(response) {
+  }).then(function (response) {
     console.log("weather " + response)
-      var location = response.name
-      // var conditions = response.weather[0].main
-      var clarity = response.weather[0].description
-      var temp = parseFloat(response.main.temp)
-      var actualTemp = (temp - 273.5) * 9/5 +32
-      var weatherIcon = response.weather[0].icon + ".png"
+    var location = response.name
+    // var conditions = response.weather[0].main
+    var clarity = response.weather[0].description
+    var temp = parseFloat(response.main.temp)
+    var actualTemp = (temp - 273.5) * 9 / 5 + 32
+    var weatherIcon = response.weather[0].icon + ".png"
 
     var line1 = "<p>Currently in " + location
     var bckGround = 'http://openweathermap.org/img/w/' + weatherIcon
@@ -614,7 +637,7 @@ function getWeather() {
     // $("#weather-box").append(line2)
     $("#weather-box").append(line3)
     $("#weather-box").append(line4)
-    $("#weather-box").css({'background-image': 'url(' + bckGround + ')', 'background-repeat': 'no-repeat', 'background-position' : 'right', 'height' : '50%'})
+    $("#weather-box").css({ 'background-image': 'url(' + bckGround + ')', 'background-repeat': 'no-repeat', 'background-position': 'right', 'height': '50%' })
     // $("#input-box").append('<div class="row"><div class="col-12 input-box"><div><input id="destination-input" class="controls" type="text" placeholder="Enter a destination location"></div></div>')
   })
 }
