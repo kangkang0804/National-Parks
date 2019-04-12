@@ -8,6 +8,13 @@ const config = {
 };
 
 /* eslint-disable */
+var opening = document.getElementById('opening-container');
+opening.addEventListener('webkitAnimationEnd',function(event) {
+  setTimeout(function(){
+    opening.style.display = 'none';
+  }, 3500)
+}, false);
+
 var initialLocationLat = 0
 var initialLocationLon = 0
 var route_divisor = 22000
@@ -21,8 +28,6 @@ var placeLatLng = {}
 var pos = {}
 var map;
 //Firebase sign-in area
-var locationLat = 0
-var locationLng = 0
 firebase.initializeApp(config);
 
 function getUserName() {
@@ -51,7 +56,6 @@ $("#sign-out-btn").on('click', event => {
 })
 
 firebase.auth().onAuthStateChanged(firebaseUser => {
-
   if(firebaseUser) {
     var userName = getUserName()
     var picUrl = getProfilePicUrl()
@@ -302,11 +306,6 @@ function initMap() {
       }
     ]
   });
-  infoWindow = new google.maps.InfoWindow({
-
-  });
-
-
 
   //Check that browser geolocation is on
   if (navigator.geolocation) {
@@ -410,11 +409,19 @@ function initMap() {
               var parkUrlDiv = $("<a>").text(website);
               parkUrlDiv.attr("href", website)
               $("#parks-view").append(parkNameDiv, parkUrlDiv);
-              existingPark = {
-                lat: latLiteralInt,
-                lng: lngLiteralInt,
-              }
-              console.log(existingPark);
+              var fullLatLong = results[i].latLong;
+              var fullLatLongSplit = fullLatLong.split(",")
+              var lat = fullLatLongSplit[0];
+              var lng = fullLatLongSplit[1];
+            } else {
+              console.log('no parks in the selected state');
+// NOT SURE IF THIS BELONGS - FOUND WHILE RESOLVING CONFLICTS
+//               existingPark = {
+//                 lat: latLiteralInt,
+//                 lng: lngLiteralInt,
+//               }
+//               console.log(existingPark);
+
             }
             const parkMarker = new google.maps.Marker({
               position: existingPark,
@@ -553,14 +560,6 @@ AutocompleteDirectionsHandler.prototype.route = function () {
 
 function getWeather() {
   var queryURL = 'http://api.openweathermap.org/data/2.5/weather?lat=' + initialLocationLat + '&lon=' + initialLocationLon + '&APPID=7a6b3354e50774f952a848fe125c2899'
-
-
-
-function getWeather() {
-  console.log(locationLat)
-  console.log(locationLng)
-  var queryURL = 'http://api.openweathermap.org/data/2.5/weather?lat=' + locationLat + '&lon=' + locationLng + '&APPID=7a6b3354e50774f952a848fe125c2899'
-
   $.ajax({
     url: queryURL,
     method: 'GET',
@@ -615,11 +614,7 @@ function getPlaces() {
           }
           createMarker()
         }
-
       })
-
-
-
   }
   function createMarker() {
     console.log("setting marker")
