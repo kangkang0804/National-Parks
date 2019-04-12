@@ -1,6 +1,6 @@
 
 
-     .opening-container{
+     #opening-container{
 
        width:100%;
          height:200%;
@@ -155,10 +155,7 @@
        * element that contains the map. */
        #map {
         height: 600px;
-        /* width: 70%; */
-        align: center;
         border-radius: 10px;
-        margin-left: 25px;
         border: 4px solid #918151;
       }
       /* Optional: Makes the sample page fill the window. */
@@ -245,24 +242,21 @@
 
 body {
   background-image: url("https://d2v9y0dukr6mq2.cloudfront.net/video/thumbnail/aNKqAFb/green-grass-under-rays-of-sun-closeup-shallow-dof-raw-video-record_spgnoeh2x__F0000.png");
-  /* Full height */
-  width: 100%;
-
-  /* Center and scale the image nicely */
   background-position: center;
   background-repeat: no-repeat;
-  background-size: cover;
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+header {
+  background-color: white;
+  width: 100%;
 }
 
 .jumbotron {
   background: url("http://www.blueskyamusements.com/images/site/template/bkg-sky.jpg");
-    /* Full height */
-    width: 100%;
-
-    /* Center and scale the image nicely */
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .display-4 {
@@ -275,6 +269,7 @@ body {
 }
 
 .lead {
+  font-family: 'Noticia Text', serif;
   color: white;
 }
 
@@ -310,16 +305,6 @@ body {
   margin-left: 5px;
 }
 
-#weather-box {
-  border: 4px solid #918151;
-  border-radius: 10px;
-  margin-left: 25px;
-  background: rgb(196, 222, 238);
-  color: rgb(83, 153, 196);
-  height: fit-content;
-  padding-top: 4px;
-  font-family:'Open Sans Condensed', sans-serif;
-}
 .input-box {
   background: none;
   border: 1px solid;
@@ -359,4 +344,70 @@ p {
   height: 33px;
   background-size: 33px;
   border-radius: 20px;
+}
+
+.row {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin: 0px;
+}
+
+#states {
+  font-family: 'Noticia Text', serif;
+  color: white;
+}
+
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {
+  #weather-box {
+    border: 4px solid #918151;
+    border-radius: 10px;
+    background: rgb(196, 222, 238);
+    color: rgb(83, 153, 196);
+    height: fit-content;
+    padding-top: 4px;
+    font-family:'Open Sans Condensed', sans-serif;
+  }
+}
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {
+  #weather-box {
+    border: 4px solid #918151;
+    border-radius: 10px;
+    background: rgb(196, 222, 238);
+    color: rgb(83, 153, 196);
+    height: fit-content;
+    padding-top: 4px;
+    font-family:'Open Sans Condensed', sans-serif;
+  }
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+  #weather-box {
+    border: 4px solid #918151;
+    border-radius: 10px;
+    background: rgb(196, 222, 238);
+    color: rgb(83, 153, 196);
+    height: fit-content;
+    padding-top: 4px;
+    font-family:'Open Sans Condensed', sans-serif;
+  }
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+  #weather-box {
+    border: 4px solid #918151;
+    border-radius: 10px;
+    margin-left: 25px;
+    background: rgb(196, 222, 238);
+    color: rgb(83, 153, 196);
+    height: fit-content;
+    padding-top: 4px;
+    font-family:'Open Sans Condensed', sans-serif;
+  }
 }
