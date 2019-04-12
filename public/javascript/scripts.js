@@ -8,9 +8,26 @@ const config = {
 };
 
 /* eslint-disable */
+var opening = document.getElementById('opening-container');
+opening.addEventListener('webkitAnimationEnd',function(event) {
+  setTimeout(function(){
+    opening.style.display = 'none';
+  }, 3500)
+}, false);
+
 var initialLocationLat = 0
 var initialLocationLon = 0
-
+var route_divisor = 22000
+var interestPoint = ""
+var interestPoints = []
+var request = {}
+var place = ""
+var placeLat = 0
+var placeLng = 0
+var placeLatLng = {}
+var pos = {}
+var map;
+//Firebase sign-in area
 firebase.initializeApp(config);
 
 function getUserName() {
@@ -39,7 +56,6 @@ $("#sign-out-btn").on('click', event => {
 })
 
 firebase.auth().onAuthStateChanged(firebaseUser => {
-  console.log(firebaseUser)
   if(firebaseUser) {
     var userName = getUserName()
     var picUrl = getProfilePicUrl()
@@ -65,14 +81,12 @@ firebase.auth().onAuthStateChanged(firebaseUser => {
     $("#user-name").attr("hidden", "true")
   }
 })
-
+//End firebase section
 console.warn('Project One JS Initialized');
 
-
-let marker;
-
+//Render the Map, set the marker for user location
 function initMap() {
-  const map = new google.maps.Map(document.getElementById('map'), {
+  map = new google.maps.Map(document.getElementById('map'), {
     mapTypeControl: false,
     zoom: 12,
 
@@ -292,39 +306,22 @@ styles: [
       }
     ]
   });
-    // var geocoder = new google.maps.Geocoder;
-    // geocoder.geocode({ 'address': 'United States' }, function (results, status) {
-    //     console.log(results);
-    //     if (status === 'OK') {
-    //         map.setCenter(results[0].geometry.location);
-    //         new google.maps.Marker({
-    //             map: map,
-    //             position: results[0].geometry.location
-    //         });
-    //     } else {
-    //         window.alert('Geocode was not successful for the following reason: ' +
-    //             status);
-    //     }
-    // });
 
-  infoWindow = new google.maps.InfoWindow();
 
+  //Check that browser geolocation is on
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition((position) => {
       const pos = {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
       };
+      //Run weather API
       initialLocationLat = pos.lat
       initialLocationLon = pos.lng
       getWeather()
-      console.log(pos);
-      console.log(position);
-      // infoWindow.setPosition(pos);
-      // infoWindow.setContent('Location found.');
-      // infoWindow.open(map);
+      //Set center of map as current location in map div
       map.setCenter(pos);
-
+      //Check for national parks near me when Near Me button is clicked
       $("#near-me").on("click", function () {
         var parkState, parkName, geoFullState, geoShortState;
         let geoURL = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=' + pos.lat + ',' + pos.lng + '&key=AIzaSyC-SbdXGcSyHpgMpMQZGNp71Z_IrHxfCOI'
@@ -359,10 +356,10 @@ styles: [
         })
       })
       // end function to find parks inside current state
+      //Check for parks in state selected from menu
       $(".state").on("click", function () {
         var stateSelected;
         stateSelected = $(this).attr("id");
-        console.log(stateSelected);
         map.setCenter();
         const parksURL = 'https://developer.nps.gov/api/v1/parks?api_key=PBHgGRuXeBVDJGsKN4OQQmsJPetNnYW3uwKNNRD8';
         $.ajax({
@@ -384,20 +381,15 @@ styles: [
               $("#parks-view").append(parkNameDiv, parkUrlDiv);
               var fullLatLong = results[i].latLong;
               var fullLatLongSplit = fullLatLong.split(",")
-              console.log(fullLatLongSplit);
               var lat = fullLatLongSplit[0];
               var lng = fullLatLongSplit[1];
-              console.log(lat);
-              console.log(lng);
-
             } else {
               console.log('no parks in the selected state');
             }
           }
         })
       })
-
-
+      //Set marker in center of map
       const marker = new google.maps.Marker({
         position: pos,
         map,
@@ -427,11 +419,10 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
 }
 
 function AutocompleteDirectionsHandler(map) {
-  console.log(map);
   this.map = map;
   this.originPlaceId = null;
   this.destinationPlaceId = null;
-  this.travelMode = 'WALKING';
+  this.travelMode = 'DRIVING';
   this.directionsService = new google.maps.DirectionsService();
   this.directionsDisplay = new google.maps.DirectionsRenderer();
   this.directionsDisplay.setMap(map);
@@ -439,64 +430,25 @@ function AutocompleteDirectionsHandler(map) {
   const originInput = document.getElementById('origin-input');
   const destinationInput = document.getElementById('destination-input');
   const modeSelector = document.getElementById('mode-selector');
-
   const originAutocomplete = new google.maps.places.Autocomplete(originInput);
   originAutocomplete.setFields(['place_id']);
-  console.log(originAutocomplete);
-
   const destinationAutocomplete = new google.maps.places.Autocomplete(destinationInput);
   destinationAutocomplete.setFields(['place_id']);
-
-  this.setupClickListener('changemode-walking', 'WALKING');
-  this.setupClickListener('changemode-transit', 'TRANSIT');
-  this.setupClickListener('changemode-driving', 'DRIVING');
-
   this.setupPlaceChangedListener(originAutocomplete, 'ORIG');
   this.setupPlaceChangedListener(destinationAutocomplete, 'DEST');
-
   this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(originInput);
   this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(
     destinationInput,
   );
   this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(modeSelector);
-
   const control = document.getElementById('floating-panel');
   control.style.display = 'block';
   map.controls[google.maps.ControlPosition.TOP_CENTER].push(control);
 
-  const onChangeHandler = function () {
-    calculateAndDisplayRoute(directionsService, directionsDisplay);
-  };
-  document.getElementById('origin-input').addEventListener('change', onChangeHandler);
-  document.getElementById('destination-input').addEventListener('change', onChangeHandler);
 
-  function calculateAndDisplayRoute(directionsService, directionsDisplay) {
-    const start = document.getElementById('origin-input').value;
-    const end = document.getElementById('destination-input').value;
-    console.log(start);
-    directionsService.route({
-      origin: start,
-      destination: end,
-      travelMode: 'DRIVING',
-    });
-  }
 }
 
-AutocompleteDirectionsHandler.prototype.setupClickListener = function (
-  id, mode,
-) {
-  const radioButton = document.getElementById(id);
-  const me = this;
-
-  radioButton.addEventListener('click', () => {
-    me.travelMode = mode;
-    me.route();
-  });
-};
-
-AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
-  autocomplete, mode,
-) {
+AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function(autocomplete, mode,) {
   const me = this;
   autocomplete.bindTo('bounds', this.map);
 
@@ -504,7 +456,7 @@ AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
     const place = autocomplete.getPlace();
 
     if (!place.place_id) {
-      window.alert('Please select an option from the dropdown list.');
+      alert('Please select an option from the dropdown list.');
       return;
     }
     if (mode === 'ORIG') {
@@ -517,9 +469,12 @@ AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
 };
 
 AutocompleteDirectionsHandler.prototype.route = function () {
-  console.log("getting route")
   if (!this.originPlaceId || !this.destinationPlaceId) {
     return;
+  }
+  else if (this.originPlaceId === this.destinationPlaceId) {
+    this.destinationPlaceId = ""
+    alert("Please select a different destination")
   }
   const me = this;
 
@@ -531,7 +486,17 @@ AutocompleteDirectionsHandler.prototype.route = function () {
     },
     (response, status) => {
       if (status === 'OK') {
+        initRB()
+        var route = response.routes[0]
+        var rboxer = new RouteBoxer()
+        var path = route.overview_path
+        dist = route.legs[0].distance.value/route_divisor
+        console.log(dist)
+        boxes = rboxer.box(path, dist)
         me.directionsDisplay.setDirections(response);
+        $("#interest-point").removeAttr("hidden")
+
+
       } else {
         window.alert(`Directions request failed due to ${status}`);
       }
@@ -541,83 +506,81 @@ AutocompleteDirectionsHandler.prototype.route = function () {
 
 
 
-$('#natParks').on('click', (event) => {
-  event.preventDefault();
-
-  // var parks = $("#").val()
-
-  const queryURL = 'https://developer.nps.gov/api/v1/parks?api_key=PBHgGRuXeBVDJGsKN4OQQmsJPetNnYW3uwKNNRD8';
-
-  $.ajax({
-    url: queryURL,
-    method: 'GET',
-  }).then((response) => {
-    console.log(response);
-    const results = response.data;
-    console.log(results);
-
-    for (var i = 0; i < results.length; i++){
-        var state = results[i].states;
-        var parkName = results[i].fullName;
-        console.log(state);
-        console.log(parkName);
-        var fullLatLong = results[i].latLong;
-        var fullLatLongSplit = fullLatLong.split(",")
-        console.log(fullLatLongSplit);
-        var lat = fullLatLongSplit[0];
-        var lng = fullLatLongSplit[1];
-        console.log(lat);
-        console.log(lng);
-        var website = results[i].url;
-        console.log(website);
-    }
-  });
-});
-
-// var map = null
-// var boxpolys = null
-// var directions = null
-// var routeBoxer = nullvar distance = null
-
-// function boxRoute() {
-//   clearBoxes()
-//   var request = {
-//     origin: $("#origin-input").val(),
-//     destination: $("#destination-input").val(),
-//     travelMode: google.maps.DirectionsTravelMode.DRIVING
-//   }
-// }
-
 function getWeather() {
-  console.log(initialLocationLat)
-  console.log(initialLocationLon)
   var queryURL = 'http://api.openweathermap.org/data/2.5/weather?lat=' + initialLocationLat + '&lon=' + initialLocationLon + '&APPID=7a6b3354e50774f952a848fe125c2899'
 
   $.ajax({
     url: queryURL,
     method: 'GET',
   }).then(function(response) {
-    console.log("weather " + response)
-      var location = response.name
-      // var conditions = response.weather[0].main
-      var clarity = response.weather[0].description
-      var temp = parseFloat(response.main.temp)
-      var actualTemp = (temp - 273.5) * 9/5 +32
-      var weatherIcon = response.weather[0].icon + ".png"
-
+    var location = response.name
+    var clarity = response.weather[0].description
+    var temp = parseFloat(response.main.temp)
+    var actualTemp = (temp - 273.5) * 9/5 +32
+    var weatherIcon = response.weather[0].icon + ".png"
     var line1 = "<p>Currently in " + location
     var bckGround = 'http://openweathermap.org/img/w/' + weatherIcon
-    // var line2 = "<p>" + conditions
     var line3 = "<p>Skies: " + clarity
     var line4 = "<p>Temperature: " + Math.round(actualTemp)
     $("#weather-box").append(line1)
-    // $("#weather-box").append(line2)
     $("#weather-box").append(line3)
     $("#weather-box").append(line4)
     $("#weather-box").css({'background-image': 'url(' + bckGround + ')', 'background-repeat': 'no-repeat', 'background-position' : 'right', 'height' : '50%'})
-    // $("#input-box").append('<div class="row"><div class="col-12 input-box"><div><input id="destination-input" class="controls" type="text" placeholder="Enter a destination location"></div></div>')
-  })
+    })
 }
+//listener for interest point
+$("#interest-point").on("keypress", (event) => {
+  if (event.which === 13) {
+    interestPoint = $("#interest-point").val().trim()
+    $("#interest-point").val("")
+    getPlaces()
+  }
+})
 
+function getPlaces() {
+
+  service = new google.maps.places.PlacesService(map);
+
+  for (i=0; i<boxes.length; i++) {
+    console.log("box " + i)
+    request = {
+      bounds : boxes[i],
+      keyword : interestPoint,
+      }
+    service.nearbySearch(request, function(results, status) {
+      if (status == google.maps.places.PlacesServiceStatus.OK) {
+        console.log(results.length)
+        for (var x=0; x < results.length; x++)
+          place = results[x]
+          console.log(place)
+          console.log("Something at: " + x)
+          placeName = place.name
+          placeLat = place.geometry.location.lat()
+          placeLng = place.geometry.location.lng()
+          pos = {
+            lat: placeLat,
+            lng: placeLng
+          }
+          createMarker()
+        }
+
+      })
+
+
+
+  }
+  function createMarker() {
+    console.log("setting marker")
+    const marker = new google.maps.Marker({
+    position: pos,
+    map,
+    title: placeName,
+    })
+  // animation: google.maps.Animation.DROP,
+  // icon: 'http://icons.iconarchive.com/icons/icons-land/vista-map-markers/48/Map-Marker-Push-Pin-1-Pink-icon.png'
+};
+
+// marker.setMap(map);
+}
 
 /* eslint-enable */
