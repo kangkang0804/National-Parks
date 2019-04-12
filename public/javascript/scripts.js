@@ -4,7 +4,7 @@ const config = {
   databaseURL: 'https://parks-n-stops.firebaseio.com',
   projectId: 'parks-n-stops',
   storageBucket: 'parks-n-stops.appspot.com',
-  messagingSenderId: '929275240522',
+  messagingSenderId: '929275240522'
 };
 
 /* eslint-disable */
@@ -64,7 +64,7 @@ firebase.auth().onAuthStateChanged(firebaseUser => {
       $("#user-pic").html('<i class="material-icons">account_circle</i>')
     }
     else if (userName != null) {
-    $("#user-pic").html('<img src=' + addSizeToGoogleProfilePic(picUrl) + '>')
+      $("#user-pic").html('<img src=' + addSizeToGoogleProfilePic(picUrl) + '>')
     }
     $("#user-name").text(userName)
     $("#sign-in").attr("hidden", "true")
@@ -90,7 +90,7 @@ function initMap() {
     mapTypeControl: false,
     zoom: 12,
 
-styles: [
+    styles: [
       {
         "elementType": "geometry",
         "stylers": [
@@ -307,7 +307,6 @@ styles: [
     ]
   });
 
-
   //Check that browser geolocation is on
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition((position) => {
@@ -318,6 +317,8 @@ styles: [
       //Run weather API
       initialLocationLat = pos.lat
       initialLocationLon = pos.lng
+      locationLat = pos.lat
+      locationLng = pos.lng
       getWeather()
       //Set center of map as current location in map div
       map.setCenter(pos);
@@ -358,24 +359,53 @@ styles: [
       // end function to find parks inside current state
       //Check for parks in state selected from menu
       $(".state").on("click", function () {
+        var parkLocated = false;
         var stateSelected;
         stateSelected = $(this).attr("id");
         map.setCenter();
+        console.log(stateSelected);
+        // locationLat = 
+        // locationLng = 
+        // getWeather()
+        var stateURL = "https://maps.googleapis.com/maps/api/geocode/json?address=" + stateSelected + "&key=AIzaSyC-SbdXGcSyHpgMpMQZGNp71Z_IrHxfCOI";
+        $.ajax({
+          url: stateURL,
+          method: 'GET',
+        }).then((response) => {
+          console.log(response.results[0].geometry.location)
+          map.setCenter(response.results[0].geometry.location);
+          map.setZoom(6);
+        });
         const parksURL = 'https://developer.nps.gov/api/v1/parks?api_key=PBHgGRuXeBVDJGsKN4OQQmsJPetNnYW3uwKNNRD8';
         $.ajax({
           url: parksURL,
           method: 'GET',
         }).then((parkResults) => {
+          var parkLocated = false;
           var results = parkResults.data;
           for (i = 0; i < results.length; i++) {
-            parkState = results[i].states;
-            parkName = results[i].fullName;
-            website = results[i].url;
-            fullLatLong = results[i].latLong;
-            fullLatLongSplit = fullLatLong.split(",")
+            var parkLocated = false;
+            var existingPark = null;
+            var parkState = results[i].states;
+            var parkName = results[i].fullName;
+            var website = results[i].url;
+            var fullLatLong = results[i].latLong;
+            if (fullLatLong === "") { continue; }
+            var fullLatLongSplit = fullLatLong.split(",")
+            var lat = fullLatLongSplit[0];
+            var lng = fullLatLongSplit[1];
+            var latSplit = lat.split(":");
+            var lngSplit = lng.split(":");
+            var latLiteral = latSplit[1];
+            var lngLiteral = lngSplit[1];
+            var latLiteralInt = parseFloat(latLiteral);
+            var lngLiteralInt = parseFloat(lngLiteral);
+
             if (stateSelected === parkState) {
+              parkLocated = true;
               var parkNameDiv = $("<p>");
               parkNameDiv.text(parkName);
+              parkNameDiv.attr("class", "park-located")
               var parkUrlDiv = $("<a>").text(website);
               parkUrlDiv.attr("href", website)
               $("#parks-view").append(parkNameDiv, parkUrlDiv);
@@ -385,8 +415,30 @@ styles: [
               var lng = fullLatLongSplit[1];
             } else {
               console.log('no parks in the selected state');
+// NOT SURE IF THIS BELONGS - FOUND WHILE RESOLVING CONFLICTS
+//               existingPark = {
+//                 lat: latLiteralInt,
+//                 lng: lngLiteralInt,
+//               }
+//               console.log(existingPark);
+
             }
+            const parkMarker = new google.maps.Marker({
+              position: existingPark,
+              map: map,
+              animation: google.maps.Animation.DROP,
+            })
+            parkMarker.setMap(map);
+
           }
+          if (!parkLocated) {
+            var noParkDiv = $("<p>");
+            noParkDiv.text("No parks were located");
+            noParkDiv.attr("id", "none-found");
+            $("#parks-view").append(noParkDiv);
+            console.log("no parks")
+          }
+
         })
       })
       //Set marker in center of map
@@ -508,7 +560,6 @@ AutocompleteDirectionsHandler.prototype.route = function () {
 
 function getWeather() {
   var queryURL = 'http://api.openweathermap.org/data/2.5/weather?lat=' + initialLocationLat + '&lon=' + initialLocationLon + '&APPID=7a6b3354e50774f952a848fe125c2899'
-
   $.ajax({
     url: queryURL,
     method: 'GET',
@@ -563,11 +614,7 @@ function getPlaces() {
           }
           createMarker()
         }
-
       })
-
-
-
   }
   function createMarker() {
     console.log("setting marker")
