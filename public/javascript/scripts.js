@@ -364,8 +364,8 @@ function initMap() {
         stateSelected = $(this).attr("id");
         map.setCenter();
         console.log(stateSelected);
-        // locationLat = 
-        // locationLng = 
+        // locationLat =
+        // locationLng =
         // getWeather()
         var stateURL = "https://maps.googleapis.com/maps/api/geocode/json?address=" + stateSelected + "&key=AIzaSyC-SbdXGcSyHpgMpMQZGNp71Z_IrHxfCOI";
         $.ajax({

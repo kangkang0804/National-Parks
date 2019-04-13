@@ -48,12 +48,14 @@
 
 <body>
 
-  <div class="row">
-    <div id="map" class="col-lg-8 col-md-12 col-sm-12 map-box"></div>
-    <div class="col-lg-3 col-md-12 col-sm-12">
-      <div class="row">
-        <div id="weather-box" class="col-lg-12 col-md-5 col-sm-12"></div>
-        <div class="col-lg-12 col-md-6 col-sm-12" id="right-panel"></div>
+  <div class="container">
+    <div class="row">
+      <div id="map" class="col-lg-8 col-md-12 col-sm-12 map-box"></div>
+      <div class="col-lg-3 col-md-12 col-sm-12">
+        <div class="row">
+          <div id="weather-box" class="col-lg-12 col-md-5 col-sm-12"></div>
+          <div class="col-lg-12 col-md-6 col-sm-12" id="right-panel"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -73,11 +75,12 @@
   <div class="container">
     <div class="row">
       <div class="col-6">
+        <label class="p">Click the Near Me button to find a park near you!</label>
         <button type="button" class="btn btn-primary" id="near-me">Near Me</button>
       </div>
       <div class="col-6">
         <div class="form-group">
-          <label id="states" for="exampleFormControlSelect2">States: </label>
+          <label class="p" for="exampleFormControlSelect2">States: </label>
           <select multiple class="form-control" id="stateSelect">
             <option class="state" id="AL">Alabama</option>
             <option class="state" id="AK">Alaska</option>
@@ -134,7 +137,7 @@
       </div>
     </div>
     <div class="row">
-      <div class="col-4 col-md-4 col-lg-4" id="parks-view">
+      <div class="col-lg-12 col-md-12 col-sm-12" id="parks-view">
       </div>
     </div>
   </div>
