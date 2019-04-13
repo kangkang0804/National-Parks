@@ -14,11 +14,37 @@
   <link href="https://fonts.googleapis.com/css?family=Noticia+Text" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Ruge+Boogie" rel="stylesheet">
   <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="./static/css/style.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="animate.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 </head>
+<link rel='shortcut icon' type='image/x-icon' href='../favicon.ico'>
+<!-- Modal to replace Alerts -->
+<div class="modal fade" id="alert-modal" tabindex="-1" role="dialog" aria-labelledby="alertModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="alertModalLabel">We are sorry!</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-text">There are no National Parks available for your search</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-<body>
+<header>
+    <div id= "opening-container">
+        <div class= "animated bounceInDown" id="logo" >Parks <img src='../static/images/favicon_io/android-chrome-192x192.png'> </n>Stops</div>
+        <p class="animated bounceInDown">Going somewhere? We have the parks and stops for you!</p>
+    </div>
 
   <div class="jumbotron jumbotron-fluid">
     <div class="container mdl-color-text--white">
@@ -26,65 +52,48 @@
         <div hidden id="user-pic"></div>
         <div hidden id="user-name"></div>
         <button hidden id="sign-in" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
-            <i class="material-icons">account_circle</i>Sign-in with Google
+          <i class="material-icons">account_circle</i>Sign-in with Google
         </button>
         <button hidden class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" id="sign-in-btn-anon">Continue as Guest</button>
         <button hidden class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" id="sign-out-btn">Sign Out</button>
-
-
       </div>
-        <h1 class="display-4">Parks <n>N </n>Stops</h1>
-        <p class="lead">Going somewhere? We have the parks and stops for you!</p>
 
+      <h1 class="display-4">Parks <n><img src="../static/images/favicon_io/android-chrome-192x192.png" class="responsive" style="width:100px; height: 100px;"></n> Stops</h1>
+      <p class="lead">Going somewhere? We have the parks and stops for you!</p>
     </div>
   </div>
 
-  <div class="bg"></div>
+</header>
 
-  <!-- <button id="sign-in-btn" class="btn">sign in</button> -->
+<body>
+
   <div class="row">
-    <div id="map" class="col-8 map-box"></div>
-    <div id="weather-box" class="col-3"></div>
+    <div id="map" class="col-lg-8 col-md-12 col-sm-12"></div>
+    <div class="col-lg-3 col-md-12 col-sm-12">
+      <div class="row">
+        <div id="weather-box" class="col-lg-12 col-md-5 col-sm-12"></div>
+        <div class="col-lg-12 col-md-6 col-sm-12" id="right-panel"></div>
+      </div>
+    </div>
   </div>
+
   <div class="container">
     <div class="row">
       <div class="col-12 col-md-12 col-lg-12">
         <div id="floating-panel">
-          <input id="origin-input" class="controls" type="text" placeholder="Enter an origin location">
-          <input id="destination-input" class="controls" type="text" placeholder="Enter a destination location">
-          <div id="mode-selector" class="controls">
-            <input type="radio" name="type" id="changemode-walking" checked="checked">
-            <label for="changemode-walking">Walking</label>
-
-            <input type="radio" name="type" id="changemode-transit">
-            <label for="changemode-transit">Transit</label>
-
-            <input type="radio" name="type" id="changemode-driving">
-            <label for="changemode-driving">Driving</label>
-
-            <button type="button" class="btn btn-primary" id="sign-in-btn">sign in</button>
-
-          </div>
+          <!-- <input id="origin-input" class="controls" type="text" placeholder="Enter an origin location">
+          <input id="destination-input" class="controls" type="text" placeholder="Enter a destination location"> -->
+          <input hidden id="interest-point" class="controls" type="text" placeholder="Are you looking for something along the way?">
         </div>
       </div>
     </div>
   </div>
 
-  <!-- <div id="map"></div>
-  <div class="col-lg-4 col-md-6 col-sm-12" id="right-panel"></div>
-  <div class="col-lg-8 col-md-6 col-sm-12" id="parks-panel"></div> -->
-
   <div class="container">
     <div class="row">
-      <div class="col-4 col-md-4 col-lg-4">
-        <button type="button" class="btn btn-primary" id="natParks">National Parks</button>
-      </div>
-      <div class="col-4 col-md-4 col-lg-4">
-        <button type="button" class="btn btn-primary" id="near-me">Near Me</button>
-      </div>
-      <div class="col-4 col-md-4 col-lg-4">
+      <div class="col-6">
         <div class="form-group">
-          <label for="exampleFormControlSelect2">States: </label>
+          <label id="states" for="exampleFormControlSelect2" class="bg-info">Search for National Parks by state: </label>
           <select multiple class="form-control" id="stateSelect">
             <option class="state" id="AL">Alabama</option>
             <option class="state" id="AK">Alaska</option>
@@ -155,6 +164,7 @@
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCyuZSRDCipVfeSThHuwT_M2A0gXShIv4k&libraries=places&callback=initMap"
     async defer></script>
   <script src="./static/javascript/scripts.js"></script>
+  <script src="./static/javascript/routeboxer.js"></script>
 </body>
 
 </html>
