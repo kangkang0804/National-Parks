@@ -149,8 +149,9 @@
     }
 
 
-       * element that contains the map. */
+       /* * element that contains the map. */
        #map {
+        margin-left: 20px;
         height: 600px;
         border-radius: 10px;
         border: 4px solid #918151;
@@ -162,7 +163,7 @@
         padding: 0;
       }
       #right-panel {
-        font-family: 'Roboto','sans-serif';
+        font-family: 'Open Sans Condensed',sans-serif;
         line-height: 30px;
         padding-left: 10px;
       }
@@ -209,7 +210,7 @@
 #origin-input,
 #destination-input {
   background-color: #fff;
-  font-family: Roboto;
+  font-family: 'Open Sans Condensed', sans-serif;
   font-size: 15px;
   font-weight: 300;
   margin-left: 12px;
@@ -231,7 +232,7 @@
 }
 
 #mode-selector label {
-  font-family: Roboto;
+  font-family: 'Open Sans Condensed', sans-serif;
   font-size: 13px;
   font-weight: 300;
 
@@ -419,4 +420,3 @@ p {
     font-family:'Open Sans Condensed', sans-serif;
   }
 }
-

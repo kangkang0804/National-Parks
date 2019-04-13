@@ -20,6 +20,25 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 </head>
 <link rel='shortcut icon' type='image/x-icon' href='../favicon.ico'>
+<!-- Modal to replace Alerts -->
+<div class="modal fade" id="alert-modal" tabindex="-1" role="dialog" aria-labelledby="alertModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="alertModalLabel">We are sorry!</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-text">There are no National Parks available for your search</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <header>
     <div id= "opening-container">
@@ -49,7 +68,7 @@
 <body>
 
   <div class="row">
-    <div id="map" class="col-lg-8 col-md-12 col-sm-12 map-box"></div>
+    <div id="map" class="col-lg-8 col-md-12 col-sm-12"></div>
     <div class="col-lg-3 col-md-12 col-sm-12">
       <div class="row">
         <div id="weather-box" class="col-lg-12 col-md-5 col-sm-12"></div>
@@ -62,8 +81,8 @@
     <div class="row">
       <div class="col-12 col-md-12 col-lg-12">
         <div id="floating-panel">
-          <input id="origin-input" class="controls" type="text" placeholder="Enter an origin location">
-          <input id="destination-input" class="controls" type="text" placeholder="Enter a destination location">
+          <!-- <input id="origin-input" class="controls" type="text" placeholder="Enter an origin location">
+          <input id="destination-input" class="controls" type="text" placeholder="Enter a destination location"> -->
           <input hidden id="interest-point" class="controls" type="text" placeholder="Are you looking for something along the way?">
         </div>
       </div>
@@ -73,11 +92,8 @@
   <div class="container">
     <div class="row">
       <div class="col-6">
-        <button type="button" class="btn btn-primary" id="near-me">Near Me</button>
-      </div>
-      <div class="col-6">
         <div class="form-group">
-          <label id="states" for="exampleFormControlSelect2">States: </label>
+          <label id="states" for="exampleFormControlSelect2" class="bg-info">Search for National Parks by state: </label>
           <select multiple class="form-control" id="stateSelect">
             <option class="state" id="AL">Alabama</option>
             <option class="state" id="AK">Alaska</option>

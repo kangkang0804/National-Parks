@@ -27,6 +27,11 @@ var placeLng = 0
 var placeLatLng = {}
 var pos = {}
 var map;
+var stateSelected = ""
+var openNow = ""
+var waypoint = []
+var start = {}
+var end = {}
 //Firebase sign-in area
 firebase.initializeApp(config);
 
@@ -322,123 +327,132 @@ function initMap() {
       getWeather()
       //Set center of map as current location in map div
       map.setCenter(pos);
-      //Check for national parks near me when Near Me button is clicked
-      $("#near-me").on("click", function () {
-        var parkState, parkName, geoFullState, geoShortState;
-        let geoURL = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=' + pos.lat + ',' + pos.lng + '&key=AIzaSyC-SbdXGcSyHpgMpMQZGNp71Z_IrHxfCOI'
-        $.ajax({
-          url: geoURL,
-          method: 'GET',
-        }).then((geoResults) => {
-          geoFullState = geoResults.results[0].address_components[4].long_name;
-          geoShortState = geoResults.results[0].address_components[4].short_name;
-          console.log(geoFullState);
-          console.log(geoShortState);
-        });
-        const parksURL = 'https://developer.nps.gov/api/v1/parks?api_key=PBHgGRuXeBVDJGsKN4OQQmsJPetNnYW3uwKNNRD8';
-        $.ajax({
-          url: parksURL,
-          method: 'GET',
-        }).then((parkResults) => {
-          var results = parkResults.data;
-          for (i = 0; i < results.length; i++) {
-            parkState = results[i].states;
-            parkName = results[i].fullName;
-            console.log(parkState);
-            console.log(parkName);
-          }
-          if (parkState === geoShortState) {
-            console.log(parkName);
-          } else {
-            var parksDisplayDiv = $("<p>");
-            parksDisplayDiv.text("There are no National Parks in " + geoFullState);
-            $("#parks-view").append(parksDisplayDiv);
-          }
-        })
-      })
-      // end function to find parks inside current state
-      //Check for parks in state selected from menu
+      //Listener for state selection
       $(".state").on("click", function () {
-        var parkLocated = false;
-        var stateSelected;
         stateSelected = $(this).attr("id");
         map.setCenter();
-        console.log(stateSelected);
-        // locationLat = 
-        // locationLng = 
-        // getWeather()
         var stateURL = "https://maps.googleapis.com/maps/api/geocode/json?address=" + stateSelected + "&key=AIzaSyC-SbdXGcSyHpgMpMQZGNp71Z_IrHxfCOI";
         $.ajax({
           url: stateURL,
           method: 'GET',
         }).then((response) => {
-          console.log(response.results[0].geometry.location)
+          var stateCoord = response.results[0].geometry.location;
+          initialLocationLat = stateCoord.lat;
+          initialLocationLon = stateCoord.lng;
+          getWeather()
           map.setCenter(response.results[0].geometry.location);
+          console.log(response.results[0].geometry.location);
           map.setZoom(6);
         });
-        const parksURL = 'https://developer.nps.gov/api/v1/parks?api_key=PBHgGRuXeBVDJGsKN4OQQmsJPetNnYW3uwKNNRD8';
+        const parksURL = 'https://developer.nps.gov/api/v1/parks?stateCode=' + stateSelected + '&api_key=PBHgGRuXeBVDJGsKN4OQQmsJPetNnYW3uwKNNRD8';
         $.ajax({
           url: parksURL,
           method: 'GET',
         }).then((parkResults) => {
           var parkLocated = false;
           var results = parkResults.data;
+          console.log(results)
           for (i = 0; i < results.length; i++) {
-            var parkLocated = false;
             var existingPark = null;
             var parkState = results[i].states;
             var parkName = results[i].fullName;
+            var parkDes = results[i].designation
             var website = results[i].url;
+            var parkDescription = results[i].description
+            var parkWeather = results[i].weatherInfo
             var fullLatLong = results[i].latLong;
-            if (fullLatLong === "") { continue; }
-            var fullLatLongSplit = fullLatLong.split(",")
-            var lat = fullLatLongSplit[0];
-            var lng = fullLatLongSplit[1];
-            var latSplit = lat.split(":");
-            var lngSplit = lng.split(":");
-            var latLiteral = latSplit[1];
-            var lngLiteral = lngSplit[1];
-            var latLiteralInt = parseFloat(latLiteral);
-            var lngLiteralInt = parseFloat(lngLiteral);
-
-            if (stateSelected === parkState) {
+            if (fullLatLong !== "") {
+              var fullLatLongSplit = fullLatLong.split(",")
+              var lat = fullLatLongSplit[0];
+              var lng = fullLatLongSplit[1];
+              var latSplit = lat.split(":");
+              var lngSplit = lng.split(":");
+              var latLiteral = latSplit[1];
+              var lngLiteral = lngSplit[1];
+              var latLiteralInt = parseFloat(latLiteral);
+              var lngLiteralInt = parseFloat(lngLiteral);
               parkLocated = true;
-              var parkNameDiv = $("<p>");
-              parkNameDiv.text(parkName);
-              parkNameDiv.attr("class", "park-located")
-              var parkUrlDiv = $("<a>").text(website);
-              parkUrlDiv.attr("href", website)
-              $("#parks-view").append(parkNameDiv, parkUrlDiv);
               var fullLatLong = results[i].latLong;
               var fullLatLongSplit = fullLatLong.split(",")
               var lat = fullLatLongSplit[0];
               var lng = fullLatLongSplit[1];
-            } else {
-              console.log('no parks in the selected state');
-// NOT SURE IF THIS BELONGS - FOUND WHILE RESOLVING CONFLICTS
-//               existingPark = {
-//                 lat: latLiteralInt,
-//                 lng: lngLiteralInt,
-//               }
-//               console.log(existingPark);
-
+              existingPark = {
+                lat: latLiteralInt,
+                lng: lngLiteralInt,
+              }
             }
             const parkMarker = new google.maps.Marker({
               position: existingPark,
               map: map,
               animation: google.maps.Animation.DROP,
+              parkName: parkName,
+              parkDescription: parkDescription,
+              parkWeather: parkWeather,
+              website: website,
+              icon: '../static/images/forest.png',
+              lat: latLiteralInt,
+              lng: lngLiteralInt
             })
-            parkMarker.setMap(map);
 
+            parkMarker.setMap(map);
+            var infowindow = new google.maps.InfoWindow()
+            parkMarker.addListener('mouseover', function () {
+              var html = '<div>' + '<b>' + 'Name: ' + '</b>' + parkMarker.parkName + '</div>' + '<br>' + '<div>' + '<b>' + 'Description: ' + '</b>' + parkMarker.parkDescription + '</div>' + '<br>' + '<div>' + '<b>' + 'Conditions: ' + '</b>' + parkMarker.parkWeather + '</div>'
+              infowindow.setContent(html);
+              infowindow.open(map, parkMarker);
+            })
+            parkMarker.addListener('mouseout', function () {
+              infowindow.close()
+            })
+            parkMarker.addListener('click', function(){
+              var directionsService = new google.maps.DirectionsService();
+              var directionsDisplay = new google.maps.DirectionsRenderer();
+              directionsDisplay.setMap(map);
+              directionsDisplay.setOptions( { suppressMarkers: true } )
+              directionsDisplay.setPanel(document.getElementById('right-panel'));
+              endLat = parkMarker.lat
+              endLng = parkMarker.lng
+              calcRoute()
+
+
+              function calcRoute() {
+                start = {
+                  lat: initialLocationLat,
+                  lng: initialLocationLon
+                }
+                end = {
+                  lat: endLat,
+                  lng: endLng
+                }
+                var request = {
+                  origin:start,
+                  destination:end,
+                  travelMode: 'DRIVING'
+                };
+                directionsService.route(request, function(response, status) {
+                  if (status == 'OK') {
+                    initRouteBoxer()
+                    var route = response.routes[0]
+                    var rboxer = new RouteBoxer()
+                    var path = route.overview_path
+                    dist = route.legs[0].distance.value/route_divisor
+                    console.log(dist)
+                    boxes = rboxer.box(path, dist)
+                    directionsDisplay.setDirections(response);
+                    $("#interest-point").removeAttr("hidden")
+                  }
+                  else {
+
+                  }
+                });
+              }
+            })
           }
           if (!parkLocated) {
-            var noParkDiv = $("<p>");
-            noParkDiv.text("No parks were located");
-            noParkDiv.attr("id", "none-found");
-            $("#parks-view").append(noParkDiv);
-            console.log("no parks")
+            var modalText = 'There are no National Parks in your selected state'
+            $('#modal-text').text(modalText)
+            $('#alert-modal').modal('show')
           }
-
         })
       })
       //Set marker in center of map
@@ -447,7 +461,7 @@ function initMap() {
         map,
         title: 'Current location',
         animation: google.maps.Animation.DROP,
-        icon: 'http://icons.iconarchive.com/icons/icons-land/vista-map-markers/48/Map-Marker-Push-Pin-1-Pink-icon.png'
+        icon: '../static/images/noun_Hiker_103614r.png'
       });
 
       marker.setMap(map);
@@ -458,8 +472,6 @@ function initMap() {
     // Browser doesn't support Geolocation
     handleLocationError(false, infoWindow, map.getCenter());
   }
-
-  new AutocompleteDirectionsHandler(map);
 }
 
 function handleLocationError(browserHasGeolocation, infoWindow, pos) {
@@ -469,107 +481,19 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
     : 'Error: Your browser doesn\'t support geolocation.');
   infoWindow.open(map);
 }
-
-function AutocompleteDirectionsHandler(map) {
-  this.map = map;
-  this.originPlaceId = null;
-  this.destinationPlaceId = null;
-  this.travelMode = 'DRIVING';
-  this.directionsService = new google.maps.DirectionsService();
-  this.directionsDisplay = new google.maps.DirectionsRenderer();
-  this.directionsDisplay.setMap(map);
-  this.directionsDisplay.setPanel(document.getElementById('right-panel'));
-  const originInput = document.getElementById('origin-input');
-  const destinationInput = document.getElementById('destination-input');
-  const modeSelector = document.getElementById('mode-selector');
-  const originAutocomplete = new google.maps.places.Autocomplete(originInput);
-  originAutocomplete.setFields(['place_id']);
-  const destinationAutocomplete = new google.maps.places.Autocomplete(destinationInput);
-  destinationAutocomplete.setFields(['place_id']);
-  this.setupPlaceChangedListener(originAutocomplete, 'ORIG');
-  this.setupPlaceChangedListener(destinationAutocomplete, 'DEST');
-  this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(originInput);
-  this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(
-    destinationInput,
-  );
-  this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(modeSelector);
-  const control = document.getElementById('floating-panel');
-  control.style.display = 'block';
-  map.controls[google.maps.ControlPosition.TOP_CENTER].push(control);
-
-
-}
-
-AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function(autocomplete, mode,) {
-  const me = this;
-  autocomplete.bindTo('bounds', this.map);
-
-  autocomplete.addListener('place_changed', () => {
-    const place = autocomplete.getPlace();
-
-    if (!place.place_id) {
-      alert('Please select an option from the dropdown list.');
-      return;
-    }
-    if (mode === 'ORIG') {
-      me.originPlaceId = place.place_id;
-    } else {
-      me.destinationPlaceId = place.place_id;
-    }
-    me.route();
-  });
-};
-
-AutocompleteDirectionsHandler.prototype.route = function () {
-  if (!this.originPlaceId || !this.destinationPlaceId) {
-    return;
-  }
-  else if (this.originPlaceId === this.destinationPlaceId) {
-    this.destinationPlaceId = ""
-    alert("Please select a different destination")
-  }
-  const me = this;
-
-  this.directionsService.route(
-    {
-      origin: { placeId: this.originPlaceId },
-      destination: { placeId: this.destinationPlaceId },
-      travelMode: this.travelMode,
-    },
-    (response, status) => {
-      if (status === 'OK') {
-        initRB()
-        var route = response.routes[0]
-        var rboxer = new RouteBoxer()
-        var path = route.overview_path
-        dist = route.legs[0].distance.value/route_divisor
-        console.log(dist)
-        boxes = rboxer.box(path, dist)
-        me.directionsDisplay.setDirections(response);
-        $("#interest-point").removeAttr("hidden")
-
-
-      } else {
-        window.alert(`Directions request failed due to ${status}`);
-      }
-    },
-  );
-};
-
-
-
 function getWeather() {
-  var queryURL = 'http://api.openweathermap.org/data/2.5/weather?lat=' + initialLocationLat + '&lon=' + initialLocationLon + '&APPID=7a6b3354e50774f952a848fe125c2899'
+  var queryURL = 'https://api.openweathermap.org/data/2.5/weather?lat=' + initialLocationLat + '&lon=' + initialLocationLon + '&APPID=7a6b3354e50774f952a848fe125c2899'
   $.ajax({
     url: queryURL,
     method: 'GET',
   }).then(function(response) {
+    $("#weather-box").text(" ");
     var location = response.name
     var clarity = response.weather[0].description
     var temp = parseFloat(response.main.temp)
     var actualTemp = (temp - 273.5) * 9/5 +32
     var weatherIcon = response.weather[0].icon + ".png"
-    var line1 = "<p>Currently in " + location
+    var line1 = "<p>State: " + location
     var bckGround = 'http://openweathermap.org/img/w/' + weatherIcon
     var line3 = "<p>Skies: " + clarity
     var line4 = "<p>Temperature: " + Math.round(actualTemp)
@@ -593,41 +517,98 @@ function getPlaces() {
   service = new google.maps.places.PlacesService(map);
 
   for (i=0; i<boxes.length; i++) {
-    console.log("box " + i)
     request = {
       bounds : boxes[i],
       keyword : interestPoint,
       }
     service.nearbySearch(request, function(results, status) {
       if (status == google.maps.places.PlacesServiceStatus.OK) {
-        console.log(results.length)
         for (var x=0; x < results.length; x++)
           place = results[x]
-          console.log(place)
-          console.log("Something at: " + x)
+          placeId = place.placeId
           placeName = place.name
+          placeIcon = {
+            url: place.icon,
+            scaledSize: new google.maps.Size(20,20)
+          }
+          placeAddress = place.vicinity
           placeLat = place.geometry.location.lat()
           placeLng = place.geometry.location.lng()
           pos = {
             lat: placeLat,
             lng: placeLng
           }
-          createMarker()
+          if (place.opening_hours.open_now === undefined) {
+            openNow = "Unknown"
+          }
+          if (place.opening_hours.open_now === false) {
+            openNow = "Closed"
+          }
+          else {
+            openNow = "Open"
+          }
+          // createMarker()
         }
+        // function createMarker() {
+          const poiMarker = new google.maps.Marker({
+            position: pos,
+            map,
+            title: placeName,
+            icon: placeIcon,
+            hours: openNow,
+            address: placeAddress,
+          })
+          poiMarker.setMap(map);
+          // };
+        var poiInfowindow = new google.maps.InfoWindow()
+        poiMarker.addListener('mouseover', function () {
+          var html = '<div>' + '<b>' + 'Name: ' + '</b>' + poiMarker.title + '</div>' + '<br>' + '<div>' + '<b>' + 'Address: ' + '</b>' + poiMarker.address + '</div>' + '<br>' + '<div>' + '<b>' + 'Currently: ' + '</b>' + poiMarker.hours + '</div>'
+          poiInfowindow.setContent(html);
+          poiInfowindow.open(map, poiMarker);
+          })
+          poiMarker.addListener('mouseout', function () {
+            poiInfowindow.close()
+          })
+          poiMarker.addListener('click', function(){
+            var directionsService = new google.maps.DirectionsService();
+            var directionsDisplay = new google.maps.DirectionsRenderer();
+            directionsDisplay.setMap(map);
+            directionsDisplay.setOptions( { suppressMarkers: true } )
+            directionsDisplay.setPanel(document.getElementById('right-panel'));
+            poiLatLng = poiMarker.position
+            calculateAndDisplayRoute()
+
+            function calculateAndDisplayRoute(directionsService, directionsDisplay) {
+              waypoint.push({
+                location: poiLatLng,
+                stopover: true
+              })
+            }
+            directionsService.route({
+              origin: start,
+              destination : end,
+              waypoints : waypoint,
+              optimizeWaypoints : true,
+              travelMode : 'DRIVING'
+            }, function(response, status) {
+              if (status == 'OK') {
+                directionsDisplay.setDirections(response)
+                var route = response.routes[0]
+                var summaryPanel = document.getElementById('right-panel')
+                summaryPanel.innerHTML = ''
+                for (var i = 0; i < route.legs.length; i++) {
+                  var routeSegment = i + 1
+                  summaryPanel.innerHTML += '<b>Route Segment: ' + routeSegment + '</b><br>'
+                  summaryPanel.innerHTML += route.legs[i].start_address + ' to '
+                  summaryPanel.innerHTML += route.legs[i].end_address + '<br>'
+                  summaryPanel.innerHTML += route.legs[i].distance.text + '<br><br>'
+                }
+              } else {
+                console.warn('nope')
+           }
+          }
+        )
       })
-  }
-  function createMarker() {
-    console.log("setting marker")
-    const marker = new google.maps.Marker({
-    position: pos,
-    map,
-    title: placeName,
     })
-  // animation: google.maps.Animation.DROP,
-  // icon: 'http://icons.iconarchive.com/icons/icons-land/vista-map-markers/48/Map-Marker-Push-Pin-1-Pink-icon.png'
-};
-
-// marker.setMap(map);
+  }
 }
-
-/* eslint-enable */

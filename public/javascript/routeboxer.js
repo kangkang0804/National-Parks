@@ -42,7 +42,7 @@
 
 RouteBoxer = null;
 
-initRB = function() {
+initRouteBoxer = function() {
   RouteBoxer = function() {
     this.R = 6371; // earth's mean radius in km
   }
